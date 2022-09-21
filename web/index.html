@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dune server</title>
+    <script defer>
+
+        const intervals = [];
+
+        async function init() {
+            fetch("/api/get/database").then(async val => {
+                let t = await val.json();
+                for (const key in t) {
+                    await prepare_data(key);
+                    intervals.push(setInterval(async () => await get_data(key), t[key]["interval"]));
+                }
+            });
+        }
+
+        async function get_data(key) {
+            fetch(`/api/get/${key}`).then(async val => {
+                document.getElementById(key).innerHTML = `<div>${key}:${await val.text()}</div>\n`;
+            });
+        }
+
+        async function prepare_data(key) {
+            document.getElementById("data-fields").innerHTML += `<div id="${key}">${key}</div>\n`;
+        }
+
+        init();
+
+    </script>
+</head>
+
+<body>
+    <h1>
+        Van Dune server
+    </h1>
+    <div id="data-fields">
+
+    </div>
+</body>
+
+</html>
