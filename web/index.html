@@ -6,30 +6,45 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dune server</title>
+
+    <!-- defer zodat de JS pas runt na de het laden van de html -->
     <script defer>
 
+        // Alle interval timers met hun callbacks
         const intervals = [];
 
+        // Functie om te runnen aan het begin
         async function init() {
+
+            // Maak een request naar de backend en haal de database op
             fetch("/api/get/database").then(async val => {
+                // Naar een object
                 let t = await val.json();
+                // Loop over het object
                 for (const key in t) {
+                    // Zet een div in de html met als id de key
                     await prepare_data(key);
+                    // Zet een interval timer om de data op te halen met als interval het "interval"-veld value
                     intervals.push(setInterval(async () => await get_data(key), t[key]["interval"]));
                 }
             });
         }
 
+        // Haal voor een specifiek item de data op van de backend
         async function get_data(key) {
             fetch(`/api/get/${key}`).then(async val => {
-                document.getElementById(key).innerHTML = `<div>${key}:${await val.text()}</div>\n`;
+
+                // Zet de data in de div die gecreeërd is bij de init() functie en zet daar nog een div in met de ruwe data (JSON.stringinfy en JSON.parse om de data een beetje mooi format te maken.).
+                document.getElementById(key).innerHTML = `<div>${key}:${JSON.stringify(JSON.parse(await val.text()), null, 4)}</div>\n`;
             });
         }
 
+        // Maak een div met als id de key en voeg hem toe aan het "data-fields"-div
         async function prepare_data(key) {
             document.getElementById("data-fields").innerHTML += `<div id="${key}">${key}</div>\n`;
         }
 
+        // Start de functie
         init();
 
     </script>
